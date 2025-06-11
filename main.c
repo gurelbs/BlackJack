@@ -1,45 +1,14 @@
 #include <inttypes.h>
+#include <main.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#define CARDS_NUM 52
-
-typedef enum Suits {
-  HEART = 0x01,
-  CLUBS = 0x02,
-  DIAMONDS = 0x04,
-  SPADES = 0x08,
-} Suits;
-
-typedef struct Card {
-  uint8_t data;
-  struct Card *next;
-} Card;
-
-typedef struct CardsList {
-  Card *head;
-  Card *tail;
-  size_t len;
-} CardsList;
-
-typedef struct BlackJackGameState {
-  struct CardsList deck;
-  struct CardsList dealer_hand;
-  struct CardsList player_hand;
-  unsigned int cash;
-  unsigned int pot;
-} BlackJackGameState;
-
-//  Game Initialization
-
 int cards_list_init(CardsList *list) {
   if (!list) return -1;
-
   list->head = NULL;
   list->tail = NULL;
   list->len = 0;
-
   return 0;
 }
 
@@ -66,8 +35,6 @@ void append_card(CardsList *list, Card *card) {
 void fill_deck(CardsList *deck) {
   if (!deck) return;
   int suits[] = {HEART, CLUBS, DIAMONDS, SPADES};
-
-  // Debug prints to see the calculation
   printf("sizeof(suits) = %zu bytes\n", sizeof(suits));                 // 16
   printf("sizeof(suits[0]) = %zu bytes\n", sizeof(suits[0]));           // 4
   printf("Number of suits = %zu\n", sizeof(suits) / sizeof(suits[0]));  // 4
@@ -96,11 +63,10 @@ int game_state_init(struct BlackJackGameState *game) {
   fill_deck(&game->deck);
   game->cash = 1000;
   game->pot = 0;
-
   return 0;
 }
 
-int game_init() {
+int main(void) {
   char userAnswer;
   printf("\nWellcome to my black jack game!!\n");
 
@@ -131,5 +97,3 @@ int game_init() {
   }
   return 0;
 }
-
-int main() { game_init(); }
