@@ -32,6 +32,16 @@ void append_card(CardsList *list, Card *card) {
   list->len++;
 }
 
+void print_binary_card_data(uint8_t value) {
+  for (int b = 7; b >= 0; b--) {
+    printf("%d", (value >> b) & 1);
+  }
+}
+
+// void print_text_card_data(uint8_t value){
+
+// }
+
 void fill_deck(CardsList *deck) {
   if (!deck) return;
   int suits[] = {HEART, CLUBS, DIAMONDS, SPADES};
@@ -43,14 +53,16 @@ void fill_deck(CardsList *deck) {
   size_t ranks_num = CARDS_NUM / suits_num;
   
 
-  for (size_t i = 0; i < suits_num; i++) {
-    for (size_t rank = 1; rank <= ranks_num; rank++) {
-      Card *new_card = create_card(rank, suits[i]);
-
-      if (new_card) {
-        // printf("Created: %zu of %zu (data: 0x%02X)\n", rank, i, new_card->data);
-        append_card(deck, new_card);
-      }
+  for (size_t i = 0, card_num = 1; i < suits_num; i++) {
+    for (size_t rank = 1; rank <= ranks_num; rank++, card_num++) {
+        Card *new_card = create_card(rank, suits[i]);
+        if (new_card) {
+          append_card(deck, new_card);
+          printf("%2zu)\tBinary: ", card_num);
+          print_binary_card_data(new_card->data);
+          printf(" | hex: 0x%02X", new_card->data);
+          puts("");
+        }
     }
   }
 }
@@ -67,6 +79,7 @@ int game_state_init(struct BlackJackGameState *game) {
   return 0;
 }
 
+
 int main(void) {
   char userAnswer;
   printf("\nWellcome to my black jack game!!\n");
@@ -81,6 +94,7 @@ int main(void) {
       game_state_init(&game);
 
       // Uncomment and replace the debug prints
+      printf("\n\n");
       printf("=== Current Game Status ===\n");
       printf("Cash: $%d\n", game.cash);
       printf("Pot: $%d\n", game.pot);
