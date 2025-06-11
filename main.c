@@ -1,8 +1,8 @@
 #include <inttypes.h>
-#include <main.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "main.h"
 
 int cards_list_init(CardsList *list) {
   if (!list) return -1;
@@ -35,24 +35,25 @@ void append_card(CardsList *list, Card *card) {
 void fill_deck(CardsList *deck) {
   if (!deck) return;
   int suits[] = {HEART, CLUBS, DIAMONDS, SPADES};
-  printf("sizeof(suits) = %zu bytes\n", sizeof(suits));                 // 16
-  printf("sizeof(suits[0]) = %zu bytes\n", sizeof(suits[0]));           // 4
-  printf("Number of suits = %zu\n", sizeof(suits) / sizeof(suits[0]));  // 4
+  // printf("sizeof(suits) = %zu bytes\n", sizeof(suits));                 // 16
+  // printf("sizeof(suits[0]) = %zu bytes\n", sizeof(suits[0]));           // 4
+  // printf("Number of suits = %zu\n", sizeof(suits) / sizeof(suits[0]));  // 4
 
   size_t suits_num = sizeof(suits) / sizeof(suits[0]);
   size_t ranks_num = CARDS_NUM / suits_num;
+  
 
   for (size_t i = 0; i < suits_num; i++) {
     for (size_t rank = 1; rank <= ranks_num; rank++) {
       Card *new_card = create_card(rank, suits[i]);
 
       if (new_card) {
-        printf("Created: %zu of %zu (data: 0x%02X)\n", rank, i, new_card->data);
+        // printf("Created: %zu of %zu (data: 0x%02X)\n", rank, i, new_card->data);
         append_card(deck, new_card);
       }
     }
   }
-};
+}
 
 int game_state_init(struct BlackJackGameState *game) {
   if (!game) return -1;
