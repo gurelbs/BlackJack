@@ -1,3 +1,6 @@
+#include <ncurses.h>  // TODO: add to read me instruction for install: sudo apt install libncurses5-dev libncursesw5-dev
+
+
 # Black-Jack Game
 
 ## This is a simple implementation of a Black-Jack game using C programming language.

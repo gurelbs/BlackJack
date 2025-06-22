@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #define CARDS_NUM 52
+#define BIT_MASK 0x0f
 
 typedef enum Suits {
   HEART = 0x01,
