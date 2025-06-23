@@ -1,10 +1,15 @@
 #include <inttypes.h>
+#include <ncurses.h>
 #include <stdlib.h>
 
-#define CARDS_NUM 52
+#define CARDS_DECK_NUM 52
 #define BIT_MASK 0x0f
+#define HEART_SYMBOL "♥"
+#define CLUBS_SYMBOL "♣"
+#define DIAMONDS_SYMBOL "♦"
+#define SPADES_SYMBOL "♠"
 
-typedef enum Suits {
+typedef enum SuitsMask {
   HEART = 0x01,
   CLUBS = 0x02,
   DIAMONDS = 0x04,
@@ -35,3 +40,7 @@ Card *create_card(unsigned int rank, unsigned int suit);
 void append_card(CardsList *list, Card *card);
 void fill_deck(CardsList *deck);
 int game_state_init(struct BlackJackGameState *game);
+void game_screen_init(void);
+void game_screen_end(void);
+void game_screen_main(WINDOW *win, const BlackJackGameState *game);
+int game_screen_print(const char *message);
