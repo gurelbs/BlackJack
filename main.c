@@ -45,13 +45,13 @@ void game_screen_main(WINDOW *win, const BlackJackGameState *game) {
   werase(win);
   box(win, 0, 0);
 
-  mvwprintw(win, 1, 2, "=== Current Game Status ===");
-  mvwprintw(win, 10, 2, "Cash:         $%d", game->cash);
-  mvwprintw(win, 11, 2, "Pot:          $%d", game->pot);
-  mvwprintw(win, 12, 2, "Deck size:    %zu cards", game->deck.len);
-  mvwprintw(win, 13, 2, "Dealer hand:  %zu cards", game->dealer_hand.len);
-  mvwprintw(win, 14, 2, "Player hand:  %zu cards", game->player_hand.len);
-  mvwprintw(win, 15, 2, "===========================");
+  mvwprintw(win, 4, 10, "=== Current Game Status ===");
+  mvwprintw(win, 8, 2, "Cash:         $%d", game->cash);
+  mvwprintw(win, 9, 2, "Pot:          $%d", game->pot);
+  mvwprintw(win, 10, 2, "Deck size:    %zu cards", game->deck.len);
+  mvwprintw(win, 11, 2, "Dealer hand:  %zu cards", game->dealer_hand.len);
+  mvwprintw(win, 12, 2, "Player hand:  %zu cards", game->player_hand.len);
+  mvwprintw(win, 16, 10, "\n===========================\n");
 
   wrefresh(win);
 }
@@ -220,6 +220,9 @@ int main(int argc, char const *argv[]) {
     return 0;
   }
 }
+
+
+
   // if:
   // is_user_can_bet:
   // check bet amount;
