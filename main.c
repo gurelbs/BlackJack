@@ -1,6 +1,5 @@
 
-#include "main.h"
-
+#include "screen.h"
 #include <inttypes.h>
 #include <ncurses.h>  // TODO: add to read me instruction for install: sudo apt install libncurses5-dev libncursesw5-dev
 #include <stdbool.h>
@@ -23,7 +22,7 @@ void display_game(WINDOW *win) {
   box(win, 0, 0);
   mvwprintw(win, 1, 2, " BLACKJACK TERMINAL EDITION - By Gurel Ben Shabat ");
   mvwprintw(win, 5, 2, " are you ready to play? ");
-  mvwprintw(win, 20, 2, "[Y] Yes, Start  [N] No, Quit\n");
+  mvwprintw(win, 6, 2, "[Y] Yes, Start  [N] No, Quit\n");
   wrefresh(win);
 }
 
@@ -45,13 +44,13 @@ void game_screen_main(WINDOW *win, const BlackJackGameState *game) {
   werase(win);
   box(win, 0, 0);
 
-  mvwprintw(win, 4, 10, "=== Current Game Status ===");
-  mvwprintw(win, 8, 2, "Cash:         $%d", game->cash);
-  mvwprintw(win, 9, 2, "Pot:          $%d", game->pot);
-  mvwprintw(win, 10, 2, "Deck size:    %zu cards", game->deck.len);
-  mvwprintw(win, 11, 2, "Dealer hand:  %zu cards", game->dealer_hand.len);
-  mvwprintw(win, 12, 2, "Player hand:  %zu cards", game->player_hand.len);
-  mvwprintw(win, 16, 10, "\n===========================\n");
+  mvwprintw(win, 2, 2, "=== Current Game Status ===");
+  mvwprintw(win, 3, 2, "Cash:         $%d", game->cash);
+  mvwprintw(win, 4, 2, "Pot:          $%d", game->pot);
+  mvwprintw(win, 5, 2, "Deck size:    %zu cards", game->deck.len);
+  mvwprintw(win, 6, 2, "Dealer hand:  %zu cards", game->dealer_hand.len);
+  mvwprintw(win, 7, 2, "Player hand:  %zu cards", game->player_hand.len);
+  mvwprintw(win, 8, 2, "\n===========================\n");
 
   wrefresh(win);
 }
@@ -174,34 +173,125 @@ int initialization(WINDOW *win, BlackJackGameState *game) {
 
 // 2. Betting:
 
-int betting(struct BlackJackGameState *game) {
-  printf("\n===== Current Game Status =============\n");
-  printf("Cash: $%d\n", game->cash);
-  printf("Pot: $%d\n", game->pot);
-  printf("\n==================\n");
-  if (game->cash < 10 && game->pot == 0) {
+int betting(WINDOW *win, BlackJackGameState *game) {
+  if (game->cash < 10) {
     printf("You don't have enough cash...\nGOODBYE!");
-    exit(0);
+    game_screen_end();
   } else {
-    printw("please type your bet amount: \n");
-    int bet_amount;
-    scanf(" %d", &bet_amount);
-    if (bet_amount > game->cash) {
-      printw("you cant bet more then you have... \n");
-    } else {
-      printw("current bet: %d\n click enter to confirm or esc to return\n",
-             bet_amount);
+    werase(win);
+    box(win, 0, 0);
+    mvwprintw(win, 4, 10, "=== Betting Phase ===");
+    mvwprintw(win, 8, 2, "Cash:         $%d", game->cash);
+    mvwprintw(win, 9, 2, "Pot:          $%d", game->pot);
+    mvwprintw(win, 10, 2, "Deck size:    %zu cards", game->deck.len);
+    mvwprintw(win, 11, 2, "Dealer hand:  %zu cards", game->dealer_hand.len);
+    mvwprintw(win, 12, 2, "Player hand:  %zu cards", game->player_hand.len);
+    mvwprintw(win, 16, 10, "\n===========================\n");
+    wrefresh(win);  // Refresh the window to show changes
+    printw("You have $%d in cash.\n", game->cash);
+    printw("Please enter your bet amount (minimum $10): ");
+    printw("\nNote: You can bet up to your current cash amount.\n");
+    printw("Enter your bet amount: ");
+    int bet_amount = 0;
+    int ch;
+    while (true) {
+      ch = getch();
+      if (ch == '\n' || ch == '\r') {
+        if (bet_amount >= 10 && bet_amount <= game->cash) {
+          game->pot += bet_amount;
+          game->cash -= bet_amount;
+          printw("\nBet accepted! You bet $%d.\n", bet_amount);
+          break;
+        } else {
+          printw("\nInvalid bet amount. Please enter a valid amount: ");
+          bet_amount = 0;  // Reset bet amount
+        }
+      } else if (ch >= '0' && ch <= '9') {
+        bet_amount = bet_amount * 10 + (ch - '0');
+        printw("%c", ch);     // Echo the digit
+      } else if (ch == 27) {  // Escape key to exit betting
+        printw("\nBetting cancelled. Exiting...\n");
+        return -1;  // Exit betting phase
+      }
+
+      else {
+        printw(
+            "\nInvalid input. Please enter a digit (0-9) or press Enter to "
+            "confirm: ");
+      }
+      refresh();  // Refresh the screen to show changes
     }
+    printw("\nYour current cash is $%d and the pot is $%d.\n", game->cash,
+           game->pot);
+    printw("Press any key to continue...\n");
+    getch();  // Wait for user input to continue
   }
+  return 0;  // Return success
 }
+
+int initial_deal(WINDOW *win, BlackJackGameState *game) {
+  if (!game) return -1;
+  game_screen_print("Dealing cards...\n");
+}
+
+
+// int screen() {
+//   initscr();             // Initialize ncurses
+//   noecho();              // Don't echo user input
+//   cbreak();              // Don't buffer input (read char by char)
+//   keypad(stdscr, TRUE);  // Enable special keys (like arrow keys)
+
+//   printw("Welcome to Blackjack!\n");
+//   printw("Press 'q' to quit at any time.\n");
+//   refresh();
+
+//   // --- Simulate a game turn ---
+//   int choice;
+//   do {
+//     // Main game display (simplified)
+//     mvprintw(5, 5, "Your hand: Ace, 7 (18)");
+//     mvprintw(6, 5, "Dealer's hand: King, ?");
+//     refresh();
+
+//     // --- Dialog for player action ---
+//     WINDOW *dialog_win =
+//         newwin(5, 40, 10, 10);  // 5 rows, 40 cols, at row 10, col 10
+//     box(dialog_win, 0, 0);      // Draw a border
+//     mvwprintw(dialog_win, 1, 2, "What do you want to do?");
+//     mvwprintw(dialog_win, 2, 2, "[H]it  [S]tand");
+//     wrefresh(dialog_win);
+
+//     choice = wgetch(dialog_win);  // Get input specific to this window
+
+//     delwin(dialog_win);  // Delete the dialog window
+
+//     // Process choice (simplified)
+//     if (choice == 'h' || choice == 'H') {
+//       mvprintw(8, 5, "You chose to Hit!");
+//     } else if (choice == 's' || choice == 'S') {
+//       mvprintw(8, 5, "You chose to Stand!");
+//     } else {
+//       mvprintw(8, 5, "Invalid choice. Try again.");
+//     }
+//     clrtoeol();  // Clear to end of line
+//     refresh();
+
+//   } while (choice != 'q' && choice != 'Q');  // Exit loop if 'q' is pressed
+
+//   mvprintw(LINES - 1, 0, "Thanks for playing! Press any key to exit.");
+//   getch();   // Wait for a key press before exiting
+//   endwin();  // End ncurses mode
+//   return 0;
+// }
 
 int main(int argc, char const *argv[]) {
   init_ui();
 
-  WINDOW *win = newwin(25, 80, 0, 0);
+  WINDOW *win = newwin(100, 100, 0, 0);
   BlackJackGameState *game;
 
   keypad(win, TRUE);
+  // screen();
 
   int done = 0;
 
@@ -214,58 +304,57 @@ int main(int argc, char const *argv[]) {
     } else if (action == 'y' || action == 'Y') {
       game_state_init(game);
       game_screen_main(win, game);
-      // display_state(win, game);
-      // betting(&game);
+      betting(win, game);
+      initial_deal(win, game);
+      // game_screen_main(win, game);
     }
     return 0;
   }
 }
 
+// if:
+// is_user_can_bet:
+// check bet amount;
+// move from cash to pot;
+// print values;
+// else:
+// print error;
+// exit
 
+// 3. Initial Deal:
+//  move 2 cards from deck to player.
+// show 2 cards
+// if blackjeck:
+// user win
+// calc prize = pot * 1.5
+// move prize from pot to cash;
+// reset:
+//  pot
+// cards
+// start again
 
-  // if:
-  // is_user_can_bet:
-  // check bet amount;
-  // move from cash to pot;
-  // print values;
-  // else:
-  // print error;
-  // exit
+// else:
+//  move 2 cards from deck to dealer.
+//  show 1 cards
 
-  // 3. Initial Deal:
-  //  move 2 cards from deck to player.
-  // show 2 cards
-  // if blackjeck:
-  // user win
-  // calc prize = pot * 1.5
-  // move prize from pot to cash;
-  // reset:
-  //  pot
-  // cards
-  // start again
+// 4. Hit or Stand
+// loop:
+// if hit:
+// move card from deck to user list
+// if stand:
+// dealer turn:
+// calc dealer hand
+// if dealer hand > 17:
+// stand
+// else:
+// hit
+// if dealer hand > 21:
+// dealer lose
+// else if dealer hand == user hand:
+// draw
+// else dealer hand > user hand && dealer hand <=21:
+// dealer win
 
-  // else:
-  //  move 2 cards from deck to dealer.
-  //  show 1 cards
+// 5. Dealer draw
 
-  // 4. Hit or Stand
-  // loop:
-  // if hit:
-  // move card from deck to user list
-  // if stand:
-  // dealer turn:
-  // calc dealer hand
-  // if dealer hand > 17:
-  // stand
-  // else:
-  // hit
-  // if dealer hand > 21:
-  // dealer lose
-  // else if dealer hand == user hand:
-  // draw
-  // else dealer hand > user hand && dealer hand <=21:
-  // dealer win
-
-  // 5. Dealer draw
-
-  // 6. Reset Cards.
+// 6. Reset Cards.
