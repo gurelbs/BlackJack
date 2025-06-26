@@ -3,17 +3,15 @@
 #include <stdlib.h>
 
 #define CARDS_DECK_NUM 52
-#define BIT_MASK 0x0f
-#define HEART_SYMBOL "♥"
-#define CLUBS_SYMBOL "♣"
-#define DIAMONDS_SYMBOL "♦"
-#define SPADES_SYMBOL "♠"
+#define SUITES_NUM 4
+#define RANKS_NUM (CARDS_DECK_NUM / SUITES_NUM)
+#define RANK_MASK 0x0F
 
-typedef enum SuitsMask {
-  HEART = 0x01,
-  CLUBS = 0x02,
-  DIAMONDS = 0x04,
-  SPADES = 0x08,
+typedef enum Suits {
+  HEART = 1,
+  CLUBS,
+  DIAMONDS,
+  SPADES,
 } Suits;
 
 typedef struct Card {
