@@ -61,6 +61,7 @@ int initializing(struct BlackJackGameState *game) {
   fill_deck(&game->deck);
   game->cash = 1000;
   game->pot = 0;
+  game->hands_won = 0;
   return 0;
 }
 
@@ -143,25 +144,27 @@ void first_dealing(BlackJackGameState *game) {
 }
 
 // TODO:
-int get_rank(uint8_t card_data) {
+int get_rank(uint8_t card_data, bool ace_rank_is_11) {
   int rank = card_data & RANK_MASK;
+  if (!rank) return -1;
   if (rank > 10) return 10;
-  if (rank < 2) return 11;
+  if (rank < 2 && ace_rank_is_11) return 11;
   return rank;
 }
+
 int heat_or_stand() {}
 int dealer_draw() {}
 int reset_cards() {}
 
-bool blackjeck_check(CardsList list) {
+bool is_blackjeck(CardsList list) {
   int total = 0;
   Card *current = list.head;
   while (current) {
-    total += get_rank(current->data);
+    total += get_rank(current->data, true);
     current = current->next;
   }
   printf("total:\t\t%d\n", total);
-  return total == 21 && list.len == 2 ? true : false;
+  return total == BLACKJECK && list.len == 2 ? true : false;
 }
 
 int show_cards(CardsList *list, bool is_dealer_hand) {
@@ -190,27 +193,60 @@ int show_cards(CardsList *list, bool is_dealer_hand) {
 }
 
 int hit_or_stand() {
-  int valid = 0;
-  char *user_action;
-  printf("Please enter H[it] or S[tand]:\t");
-  while (!valid) {
-    if (scanf(" %c", &user_action) != "S") {
-      printf("Invalid input.\nPlease enter H[it] or S[tand]:t");
-      int c;
-      while ((c = getchar()) != '\n' && c != EOF);
-      continue;
+  char answer;
+  printf("Please Enter Hit or Stand? (H/S):\t");
+  while (true) {
+    if (scanf(" %c", &answer) == 1) {
+      if (answer == 'H' || answer == 'h') {
+        printf("one more card...");
+        break;
+      } else if (answer == 'S' || answer == 's') {
+        printf("moving to dealer turn...");
+        break;
       }
-    if (user_action == "H") {
-      printf("one more card...");
-      valid = 1;
-    } else if (user_action == "S") {
-      printf("moving to dealer turn...");
-      valid = 1;
+    } else {
+      while (getchar() != '\n' && getchar() != EOF) {
+        printf("Just type Y or N: ");
+      }
     }
   }
 }
 
-int main(int argc, char const *argv[]) {
+void ask_play_again(BlackJackGameState *game) {
+  char answer;
+  const char *playAgainOptions[] = {
+      "Nice win! Ready for another hand? (Y/N):\t",
+      "Feeling good? Let's play again! (Y/N):\t",
+      "Want to keep the cards coming? (Y/N):\t",
+      "That was a great hand! Up for another? (Y/N):\t",
+      "You're on a roll! Care for one more? (Y/N):\t",
+  };
+  int num_options = sizeof(playAgainOptions) / sizeof(playAgainOptions[0]);
+  int random_index = rand() % num_options;
+  printf("%s", playAgainOptions[random_index]);
+
+  while (true) {
+    if (scanf(" %c", &answer) == 1) {
+      if (answer == 'Y' || answer == 'y') {
+        printf("Alright, let's go again!\n");
+        break;
+      } else if (answer == 'N' || answer == 'n') {
+        printf("CASH WON:\t\t%d\n", game->cash);
+        printf("HANDS WON:\t\t%d\n", game->hands_won);
+        printf("\n\nThanks for playing! See you next time!\n\n");
+        exit(0);
+      } else {
+        printf("Just type Y or N: ");
+      }
+    } else {
+      while (getchar() != '\n' && getchar() != EOF) {
+        printf("Just type Y or N: ");
+      }
+    }
+  }
+}
+
+int main() {
   printf("\n====================================\n");
   printf("\t~ BlackJack Game ~\n");
   printf("\tBy Gurel Ben Shabat\n");
@@ -223,14 +259,15 @@ int main(int argc, char const *argv[]) {
   first_dealing(&game);
   printf("Your Cards:\n");
   show_cards(&game.player_hand, false);
-  if (blackjeck_check(game.player_hand)) {
+  if (is_blackjeck(game.player_hand)) {
     printf("BLACKJECK! You Win!\n");
     game.cash += (game.pot * 2.5);
     game.pot = 0;
-    print_all_game_status(&game);
+    game.hands_won += 1;
+    reset_cards(&game);
+    ask_play_again(&game);
   } else {
     printf("Dealer Cards:\n");
     show_cards(&game.dealer_hand, true);
   }
-  return 0;
 }

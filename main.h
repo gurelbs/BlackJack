@@ -3,10 +3,10 @@
 #include <stdlib.h>
 
 #define CARDS_DECK_NUM 52
+#define BLACKJECK 21
 #define SUITES_NUM 4
 #define RANKS_NUM (CARDS_DECK_NUM / SUITES_NUM)
 #define RANK_MASK 0x0F
-
 typedef enum Suits {
   HEART = 1,
   CLUBS,
@@ -31,6 +31,7 @@ typedef struct BlackJackGameState {
   struct CardsList player_hand;
   unsigned int cash;
   unsigned int pot;
+  unsigned int hands_won;
 } BlackJackGameState;
 
 int cards_list_init(CardsList *list);
