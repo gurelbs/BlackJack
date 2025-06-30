@@ -346,6 +346,3 @@ int main() {
   initializing(&game);
   game_loop(&game);
 }
-
-// TODO: fix player 21 with more then 2 cards against dealer (current: player
-// losw instead of win)
