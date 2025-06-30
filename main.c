@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+void game_loop(BlackJackGameState *game);
+
 int cards_list_init(CardsList *list) {
   if (!list) return -1;
   list->head = NULL;
@@ -53,8 +55,7 @@ void fill_deck(CardsList *deck) {
   }
 }
 
-int initializing(struct BlackJackGameState *game) {
-  if (!game) return -1;
+void initializing(struct BlackJackGameState *game) {
   cards_list_init(&game->deck);
   cards_list_init(&game->dealer_hand);
   cards_list_init(&game->player_hand);
@@ -62,7 +63,10 @@ int initializing(struct BlackJackGameState *game) {
   game->cash = 1000;
   game->pot = 0;
   game->hands_won = 0;
-  return 0;
+  printf("\n====================================\n");
+  printf("\t~ BlackJack Game ~\n");
+  printf("\tBy Gurel Ben Shabat\n");
+  printf("====================================\n\n");
 }
 
 int betting(BlackJackGameState *game) {
@@ -143,7 +147,6 @@ void first_dealing(BlackJackGameState *game) {
   append_card(&game->dealer_hand, card_remove_at(&game->deck));
 }
 
-// TODO:
 int get_rank(uint8_t card_data, bool ace_rank_is_11) {
   int rank = card_data & RANK_MASK;
   if (!rank) return -1;
@@ -152,12 +155,13 @@ int get_rank(uint8_t card_data, bool ace_rank_is_11) {
   return rank;
 }
 
-int heat_or_stand() {}
 int dealer_draw() {}
 
-int reset_cards_lists(BlackJackGameState game, CardsList list) {
-  for (size_t i = 1; i <= list.len; i++) {
-    append_card(&game.deck, card_remove_at(&list));
+int reset_cards_lists(BlackJackGameState *game, CardsList *list) {
+  while (list->len > 0) {
+    append_card(&game->deck, list->head);
+    list->head = list->head->next;
+    list->len--;
   }
 }
 
@@ -204,7 +208,7 @@ void ask_play_again(BlackJackGameState *game) {
     if (scanf(" %c", &answer) == 1) {
       if (answer == 'Y' || answer == 'y') {
         printf("Alright, let's go again!\n");
-        betting(game);
+        game_loop(game);
       } else if (answer == 'N' || answer == 'n') {
         printf("CASH WON:\t\t%d\n", game->cash);
         printf("HANDS WON:\t\t%d\n", game->hands_won);
@@ -236,18 +240,27 @@ int hit_or_stand(BlackJackGameState *game) {
   while (true) {
     if (scanf(" %c", &answer) == 1) {
       if (answer == 'H' || answer == 'h') {
-        printf("one more card...\n");
         append_card(&game->player_hand, card_remove_at(&game->deck));
         show_cards(&game->player_hand, false);
         int total = calc_total(&game->player_hand);
         if (total < BLACKJECK) {
           hit_or_stand(game);
         } else if (total > BLACKJECK) {
-          printf("BUSTED!\tYou lose...\n");
+          printf("Dealer wins!\n");
           game->pot = 0;
-          ask_play_again(game);
-        } else
+          reset_cards_lists(game, &game->player_hand);
+          reset_cards_lists(game, &game->dealer_hand);
+          if (game->cash < 10) {
+            printf("You Have less then $10\nGame Over!\nGoodbye...\n");
+            exit(0);
+          } else {
+            ask_play_again(game);
+          }
+        } else {
+          printf("moving to dealer turn...\n");
           break;
+        }
+        break;
       } else if (answer == 'S' || answer == 's') {
         printf("moving to dealer turn...\n");
         break;
@@ -260,19 +273,17 @@ int hit_or_stand(BlackJackGameState *game) {
   }
 }
 
+void game_loop(BlackJackGameState *game) {
+  betting(game);
+  first_dealing(game);
+  show_cards(&game->dealer_hand, true);
+  show_cards(&game->player_hand, false);
+  hit_or_stand(game);
+};
+
 int main() {
-  printf("\n====================================\n");
-  printf("\t~ BlackJack Game ~\n");
-  printf("\tBy Gurel Ben Shabat\n");
-  printf("====================================\n\n");
   srand(time(NULL));
   BlackJackGameState game;
-
   initializing(&game);
-  betting(&game);
-  first_dealing(&game);
-
-  show_cards(&game.dealer_hand, true);
-  show_cards(&game.player_hand, false);
-  hit_or_stand(&game);
+  game_loop(&game);
 }
