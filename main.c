@@ -3,7 +3,7 @@
 #include "main.h"
 
 #include <inttypes.h>
-#include <ncurses.h>  // TODO: add to read me instruction for install: sudo apt install libncurses5-dev libncursesw5-dev
+// #include <ncurses.h>  // TODO: add to read me instruction for install: sudo apt install libncurses5-dev libncursesw5-dev
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
