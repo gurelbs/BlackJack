@@ -1,5 +1,4 @@
 
-#include "main.h"
 
 #include <inttypes.h>
 #include <ncurses.h>  // TODO: add to read me instruction for install: sudo apt install libncurses5-dev libncursesw5-dev
@@ -7,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include "main.h"
 
 void game_loop(BlackJackGameState *game);
 
@@ -76,10 +76,10 @@ int betting(BlackJackGameState *game) {
   } else {
     printf("You have $%d cash.\n", game->cash);
     printf("Please enter your bet amount (between $10 and $%d):\t", game->cash);
-    int bet_amount = 0;
+    unsigned int bet_amount = 0;
     int valid = 0;
     while (!valid) {
-      if (scanf(" %d", &bet_amount) != 1) {
+      if (scanf(" %u", &bet_amount) != 1) {
         printf("Invalid input.\nPlease enter a number:\t");
         int c;
         while ((c = getchar()) != '\n' && c != EOF);
@@ -104,7 +104,7 @@ int betting(BlackJackGameState *game) {
 }
 
 Card *card_remove_at(CardsList *list) {
-  int random_index = rand() % list->len;
+  long unsigned int random_index = rand() % list->len;
   size_t i = 0;
   Card *previous = NULL;
   Card *current = list->head;
@@ -155,9 +155,9 @@ int get_rank(uint8_t card_data, bool ace_rank_is_11) {
   return rank;
 }
 
-int dealer_draw() {}
+// int dealer_draw() {}
 
-int reset_cards_lists(BlackJackGameState *game, CardsList *list) {
+void reset_cards_lists(BlackJackGameState *game, CardsList *list) {
   while (list->len > 0) {
     append_card(&game->deck, list->head);
     list->head = list->head->next;
@@ -225,7 +225,7 @@ void ask_play_again(BlackJackGameState *game) {
   }
 }
 
-int hit_or_stand(BlackJackGameState *game) {
+void hit_or_stand(BlackJackGameState *game) {
   char answer;
   int total = calc_total(&game->player_hand);
   if (total == BLACKJECK && game->dealer_hand.len == 2) {
@@ -279,7 +279,7 @@ void game_loop(BlackJackGameState *game) {
   show_cards(&game->dealer_hand, true);
   show_cards(&game->player_hand, false);
   hit_or_stand(game);
-};
+}
 
 int main() {
   srand(time(NULL));

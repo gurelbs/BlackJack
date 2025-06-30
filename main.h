@@ -1,19 +1,17 @@
 #include <inttypes.h>
-#include <stdbool.h>
+#include <ncurses.h>
 #include <stdlib.h>
 
 #define CARDS_DECK_NUM 52
-#define BIT_MASK 0x0f
-#define HEART_SYMBOL "♥"
-#define CLUBS_SYMBOL "♣"
-#define DIAMONDS_SYMBOL "♦"
-#define SPADES_SYMBOL "♠"
-
-typedef enum SuitsMask {
-  HEART = 0x01,
-  CLUBS = 0x02,
-  DIAMONDS = 0x04,
-  SPADES = 0x08,
+#define BLACKJECK 21
+#define SUITES_NUM 4
+#define RANKS_NUM (CARDS_DECK_NUM / SUITES_NUM)
+#define RANK_MASK 0x0F
+typedef enum Suits {
+  HEART = 1,
+  CLUBS,
+  DIAMONDS,
+  SPADES,
 } Suits;
 
 typedef struct Card {
@@ -33,6 +31,7 @@ typedef struct BlackJackGameState {
   struct CardsList player_hand;
   unsigned int cash;
   unsigned int pot;
+  unsigned int hands_won;
 } BlackJackGameState;
 
 int cards_list_init(CardsList *list);
@@ -45,9 +44,9 @@ Card *card_remove_at(CardsList *list);
 void print_all_game_status(BlackJackGameState *game);
 void first_dealing(BlackJackGameState *game);
 int get_rank(uint8_t card_data, bool ace_rank_is_11);
-int reset_cards_lists(BlackJackGameState *game, CardsList *list);
+void reset_cards_lists(BlackJackGameState *game, CardsList *list);
 int calc_total(CardsList *list);
 void show_cards(CardsList *list, bool is_dealer_hand);
 void ask_play_again(BlackJackGameState *game);
-int hit_or_stand(BlackJackGameState *game);
+void hit_or_stand(BlackJackGameState *game);
 void game_loop(BlackJackGameState *game);
