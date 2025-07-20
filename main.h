@@ -13,9 +13,9 @@
 
 typedef enum Suits {
   HEART = 1,
-  CLUBS,
-  DIAMONDS,
-  SPADES,
+  CLUBS = 2,
+  DIAMONDS = 4,
+  SPADES = 8,
 } Suits;
 
 typedef struct Card {
@@ -54,3 +54,5 @@ void show_cards(CardsList *list, bool show_all);
 void ask_play_again(BlackJackGameState *game);
 void hit_or_stand(BlackJackGameState *game);
 void game_loop(BlackJackGameState *game);
+void deallocate_cards_list(CardsList *list);
+void cleanup(BlackJackGameState *game);

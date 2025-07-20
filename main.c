@@ -3,14 +3,16 @@
 #include "main.h"
 
 #include <inttypes.h>
-// #include <ncurses.h>  // TODO: add to read me instruction for install: sudo apt install libncurses5-dev libncursesw5-dev
+// #include <ncurses.h>  // TODO: add to read me instruction for install: sudo
+// apt install libncurses5-dev libncursesw5-dev
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
 int cards_list_init(CardsList *list) {
-  if (!list) return -1;
+  if (!list)
+    return -1;
   list->head = NULL;
   list->tail = NULL;
   list->len = 0;
@@ -29,7 +31,8 @@ Card *create_card(unsigned int rank, unsigned int suit) {
 }
 
 void append_card(CardsList *list, Card *card) {
-  if (!list || !card) return;
+  if (!list || !card)
+    return;
 
   if (list->head == NULL) {
     list->head = card;
@@ -42,7 +45,8 @@ void append_card(CardsList *list, Card *card) {
 }
 
 void fill_deck(CardsList *deck) {
-  if (!deck) return;
+  if (!deck)
+    return;
   int suits[] = {HEART, CLUBS, DIAMONDS, SPADES};
   for (size_t i = 0, card_num = 1; i < SUITES_NUM; i++) {
     for (size_t rank = 1; rank <= RANKS_NUM; rank++, card_num++) {
@@ -71,6 +75,7 @@ void initializing(struct BlackJackGameState *game) {
 int betting(BlackJackGameState *game) {
   if (game->cash < 10 && game->pot == 0) {
     printf("You don't have enough cash and the pot is empty...\nGOODBYE!\n");
+    cleanup(game);
     return -1;
   } else {
     printf("CASH:\t%d\n", game->cash);
@@ -83,7 +88,8 @@ int betting(BlackJackGameState *game) {
       if (scanf(" %u", &bet_amount) != 1) {
         printf("Invalid input.\nPlease enter a number:\t");
         int c;
-        while ((c = getchar()) != '\n' && c != EOF);
+        while ((c = getchar()) != '\n' && c != EOF)
+          ;
         continue;
       }
       if (bet_amount >= 10 && bet_amount <= game->cash) {
@@ -95,11 +101,10 @@ int betting(BlackJackGameState *game) {
     }
     game->pot += bet_amount;
     game->cash -= bet_amount;
-    printf(
-        "\n____________\n"
-        "POT:\t$%d\nCASH:\t$%d"
-        "\n‾‾‾‾‾‾‾‾‾‾‾‾\n",
-        bet_amount, game->cash);
+    printf("\n____________\n"
+           "POT:\t$%d\nCASH:\t$%d"
+           "\n‾‾‾‾‾‾‾‾‾‾‾‾\n",
+           bet_amount, game->cash);
   }
   return 0;
 }
@@ -114,7 +119,7 @@ Card *card_remove_at(CardsList *list) {
     previous = current;
     current = current->next;
     // printf("current data: %hhu\n", current->data);
-    list->tail->next = NULL;
+    // list->tail->next = NULL;
     i++;
   }
   if (previous) {
@@ -155,10 +160,14 @@ int get_rank(uint8_t card_data) {
 
 void reset_cards_by_list(BlackJackGameState *game, CardsList *list) {
   while (list->len > 0) {
-    append_card(&game->deck, list->head);
-    list->head = list->head->next;
+    Card *card_to_move = list->head;
     list->len--;
+    list->head = list->head->next;
+    card_to_move->next = NULL;
+    append_card(&game->deck, card_to_move);
   }
+  list->head = NULL;
+  list->tail = NULL;
 }
 
 void reset_cards(BlackJackGameState *game) {
@@ -197,15 +206,34 @@ int calc_total(CardsList *list) {
 void show_cards(CardsList *list, bool show_all) {
   static const char *ranks[] = {"?", "A", "2", "3",  "4", "5", "6",
                                 "7", "8", "9", "10", "J", "Q", "K"};
-  static const char *suits[] = {"?", "♥", "♠", "♦", "♣"};
+  static const char *suits[] = {
+      "?", "♥", "♣", "♦", "♠",
+  };
   Card *current = list->head;
   // printf("\n%s Cards:\n\n", is_player_cards ? "Your" : "Dealer");
   while (current) {
     uint8_t rank = current->data & RANK_MASK;
-    uint8_t suit = (current->data >> 4) & RANK_MASK;
-
+    uint8_t suit_bits = (current->data >> 4) & RANK_MASK;
+    uint8_t suit_index = 0;
+    switch (suit_bits) {
+    case 1:
+      suit_index = 1;
+      break; // HEART = 1 -> index 1 (♥)
+    case 2:
+      suit_index = 2;
+      break; // CLUBS = 2 -> index 2 (♣)
+    case 4:
+      suit_index = 3;
+      break; // DIAMONDS = 4 -> index 3 (♦)
+    case 8:
+      suit_index = 4;
+      break; // SPADES = 8 -> index 4 (♠)
+    default:
+      suit_index = 0;
+      break; // Invalid, show "?"
+    }
     printf("%s%s|\n|\t|\n|   %s   |\n|\t|\n|%s%s\n", ranks[rank],
-           (rank == 10) ? "‾‾‾‾‾‾" : "‾‾‾‾‾‾‾", suits[suit],
+           (rank == 10) ? "‾‾‾‾‾‾" : "‾‾‾‾‾‾‾", suits[suit_index],
            (rank == 10) ? "______" : "_______", ranks[rank]);
     if (!show_all) {
       printf("\n\n   ??   \n\n\n");
@@ -221,7 +249,7 @@ void show_cards(CardsList *list, bool show_all) {
 
 void ask_play_again(BlackJackGameState *game) {
   char answer;
-  printf("Feeling good? Let's play again! (Y/N):\t");
+  printf("Want to play again? (Y/N):\t");
   while (true) {
     if (scanf(" %c", &answer) == 1) {
       if (answer == 'Y' || answer == 'y') {
@@ -231,6 +259,7 @@ void ask_play_again(BlackJackGameState *game) {
         printf("CASH WON:\t\t%d\n", game->cash);
         printf("HANDS WON:\t\t%d\n", game->hands_won);
         printf("\n\nThanks for playing! See you next time!\n\n");
+        cleanup(game);
         exit(0);
       } else {
         printf("Just type Y or N: ");
@@ -328,6 +357,29 @@ void hit_or_stand(BlackJackGameState *game) {
       }
     }
   }
+}
+
+void deallocate_cards_list(CardsList *list) {
+  Card *current = list->head;
+  Card *next;
+
+  while (current != NULL) {
+    next = current->next;
+    free(current);
+    current = next;
+  }
+  list->head = NULL;
+  list->tail = NULL;
+  list->len = 0;
+}
+
+void cleanup(BlackJackGameState *game) {
+  deallocate_cards_list(&game->deck);
+  printf("deck cards list deallocated!\n");
+  deallocate_cards_list(&game->player_hand);
+  printf("player hand cards list deallocated!\n");
+  deallocate_cards_list(&game->dealer_hand);
+  printf("dealer hand cards list deallocated!\n");
 }
 
 void game_loop(BlackJackGameState *game) {
