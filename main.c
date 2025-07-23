@@ -3,8 +3,6 @@
 #include "main.h"
 
 #include <inttypes.h>
-// #include <ncurses.h>  // TODO: add to read me instruction for install: sudo
-// apt install libncurses5-dev libncursesw5-dev
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -80,7 +78,6 @@ int betting(BlackJackGameState *game) {
   } else {
     printf("CASH:\t%d\n", game->cash);
     printf("POT:\t%d\n", game->pot);
-    // if (game->pot > 0)
     printf("Please enter your bet amount (between $10 and $%d):\t", game->cash);
     unsigned int bet_amount = 0;
     int valid = 0;
@@ -118,8 +115,6 @@ Card *card_remove_at(CardsList *list) {
   while (current != NULL && i < random_index) {
     previous = current;
     current = current->next;
-    // printf("current data: %hhu\n", current->data);
-    // list->tail->next = NULL;
     i++;
   }
   if (previous) {
@@ -210,7 +205,6 @@ void show_cards(CardsList *list, bool show_all) {
       "?", "♥", "♣", "♦", "♠",
   };
   Card *current = list->head;
-  // printf("\n%s Cards:\n\n", is_player_cards ? "Your" : "Dealer");
   while (current) {
     uint8_t rank = current->data & RANK_MASK;
     uint8_t suit_bits = (current->data >> 4) & RANK_MASK;
@@ -279,7 +273,6 @@ void dealer_draw(BlackJackGameState *game) {
   printf("\nDealer Cards:\n\n");
   show_cards(&game->dealer_hand, true);
 
-  // Dealer draws until 17 or more
   while (total_dealer < 17) {
     Card *new_card = card_remove_at(&game->deck);
     append_card(&game->dealer_hand, new_card);
@@ -288,7 +281,6 @@ void dealer_draw(BlackJackGameState *game) {
     show_cards(&game->dealer_hand, true);
   }
 
-  // Decide winner
   if (total_dealer > BLACKJECK) {
     printf("Dealer busts! Player Wins!\n");
     game->cash += game->pot * 2;
@@ -307,7 +299,6 @@ void dealer_draw(BlackJackGameState *game) {
     game->hands_won += 1;
   } else {
     printf("It's a tie!\n");
-    // Optionally, return bet to player
     game->cash += game->pot;
     game->pot = 0;
   }
@@ -375,11 +366,8 @@ void deallocate_cards_list(CardsList *list) {
 
 void cleanup(BlackJackGameState *game) {
   deallocate_cards_list(&game->deck);
-  printf("deck cards list deallocated!\n");
   deallocate_cards_list(&game->player_hand);
-  printf("player hand cards list deallocated!\n");
   deallocate_cards_list(&game->dealer_hand);
-  printf("dealer hand cards list deallocated!\n");
 }
 
 void game_loop(BlackJackGameState *game) {

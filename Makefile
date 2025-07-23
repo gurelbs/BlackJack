@@ -1,10 +1,13 @@
 CC=gcc
-CFLAGS=-Wall -Wextra -std=c99 -pedantic
+CFLAGS=-Wall -Wextra -std=c99 -pedantic -g
 FILES=main.c main.h
 
 game: $(FILES)
-	$(CC) $(FILES) $(CFLAGS) -o game && ./game
-.PHONY: 
-	clean
+	$(CC) main.c $(CFLAGS) -o game
+
+run: game
+	./game
+
+.PHONY: clean run
 clean: 
 	rm -f game
