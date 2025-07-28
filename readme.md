@@ -2,14 +2,24 @@
 
 A console-based BlackJack game written in C by Gurel Ben Shabat.
 
-## Quick Start
+## Build Commands
 
 ```bash
-# Run the game
+# Compile the game and run
 make game
 
 # Clean build files
 make clean
+```
+
+### Manual Compilation
+
+```bash
+gcc blackjeck.c -Wall -Wextra -std=c99 -pedantic -g -o blackjeck
+```
+
+```bash
+./blackjeck
 ```
 
 ## Overview
@@ -41,29 +51,6 @@ BlackJack/
 
 - GCC compiler
 - Standard C library
-
-### Build Commands
-
-```bash
-# Compile the game
-make game
-
-# Compile and run
-make run
-
-# Clean build files
-make clean
-```
-
-### Manual Compilation
-
-```bash
-gcc blackjeck.c -Wall -Wextra -std=c99 -pedantic -g -o blackjeck
-```
-
-```bash
-./blackjeck
-```
 
 ## Data Structures
 
