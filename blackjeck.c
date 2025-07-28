@@ -1,6 +1,4 @@
-
-
-#include "main.h"
+#include "blackjeck.h"
 
 #include <inttypes.h>
 #include <stdbool.h>
@@ -75,6 +73,12 @@ int betting(BlackJackGameState *game) {
     printf("You don't have enough cash and the pot is empty...\nGOODBYE!\n");
     cleanup(game);
     return -1;
+  } else if (game->pot > 0) {
+    // Pot has money from previous tie - skip betting
+    printf("CASH:\t$%d\n", game->cash);
+    printf("POT:\t$%d (from previous tie)\n", game->pot);
+    printf("\nUsing existing pot from the tie. Let's continue!\n");
+    return 0;
   } else {
     printf("CASH:\t%d\n", game->cash);
     printf("POT:\t%d\n", game->pot);
@@ -168,7 +172,7 @@ void reset_cards_by_list(BlackJackGameState *game, CardsList *list) {
 void reset_cards(BlackJackGameState *game) {
   reset_cards_by_list(game, &game->player_hand);
   reset_cards_by_list(game, &game->dealer_hand);
-  if (game->cash < 10) {
+  if (game->cash < 10 && game->pot == 0) {
     printf("Your of cash to bet.\nGame Over!\nGoodbye...\n");
     exit(0);
   }
@@ -199,69 +203,90 @@ int calc_total(CardsList *list) {
 }
 
 void show_cards(CardsList *list, bool show_all) {
-  static const char *ranks[] = {"?", "A", "2", "3",  "4", "5", "6",
-                                "7", "8", "9", "10", "J", "Q", "K"};
-  static const char *suits[] = {
-      "?", "♥", "♣", "♦", "♠",
-  };
+  static const char *ranks[] = {"?", "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"};
+  
   Card *current = list->head;
-  while (current) {
-    uint8_t rank = current->data & RANK_MASK;
-    uint8_t suit_bits = (current->data >> 4) & RANK_MASK;
-    uint8_t suit_index = 0;
-    switch (suit_bits) {
-    case 1:
-      suit_index = 1;
-      break; // HEART = 1 -> index 1 (♥)
-    case 2:
-      suit_index = 2;
-      break; // CLUBS = 2 -> index 2 (♣)
-    case 4:
-      suit_index = 3;
-      break; // DIAMONDS = 4 -> index 3 (♦)
-    case 8:
-      suit_index = 4;
-      break; // SPADES = 8 -> index 4 (♠)
-    default:
-      suit_index = 0;
-      break; // Invalid, show "?"
-    }
-    printf("%s%s|\n|\t|\n|   %s   |\n|\t|\n|%s%s\n", ranks[rank],
-           (rank == 10) ? "‾‾‾‾‾‾" : "‾‾‾‾‾‾‾", suits[suit_index],
-           (rank == 10) ? "______" : "_______", ranks[rank]);
-    if (!show_all) {
-      printf("\n\n   ??   \n\n\n");
-      break;
-    }
-    current = current->next;
+  int card_count = 0;
+  
+  // Count all cards in the list
+  Card *temp = current;
+  while (temp) {
+    card_count++;
+    temp = temp->next;
   }
+  
+  // Print cards row by row
+  for (int row = 0; row < 7; row++) {
+    current = list->head;
+    for (int i = 0; i < card_count; i++) {
+      if (!show_all && i > 0) {
+        // Show hidden card with '?' symbols
+        switch (row) {
+          case 0: printf("┌─────────┐ "); break;
+          case 1: printf("│         │ "); break;
+          case 2: case 4: printf("│         │ "); break;
+          case 3: printf("│    ?    │ "); break;
+          case 5: printf("│         │ "); break;
+          case 6: printf("└─────────┘ "); break;
+        }
+      } else {
+        uint8_t rank = current->data & RANK_MASK;
+        uint8_t suit_bits = (current->data >> 4) & RANK_MASK;
+        
+        const char *suit = (suit_bits & 1) ? "♥" :
+                          (suit_bits & 2) ? "♣" :
+                          (suit_bits & 4) ? "♦" :
+                          (suit_bits & 8) ? "♠" : "?";
+        
+        switch (row) {
+          case 0: printf("┌─────────┐ "); break;
+          case 1: printf("│%s        │ ", suit); break;
+          case 2: case 4: printf("│         │ "); break;
+          case 3: printf("│    %s%s   │ ", ranks[rank], rank == 10 ? "" : " "); break;
+          case 5: printf("│        %s│ ", suit); break;
+          case 6: printf("└─────────┘ "); break;
+        }
+      }
+      current = current->next;
+    }
+    printf("\n");
+  }
+  
   if (show_all) {
-    int total = calc_total(list);
-    printf("\ntotal:\t%d\n", total);
+    printf("\nTotal: %d\n", calc_total(list));
   }
 }
 
 void ask_play_again(BlackJackGameState *game) {
   char answer;
+  char extra_char;
   printf("Want to play again? (Y/N):\t");
   while (true) {
     if (scanf(" %c", &answer) == 1) {
+      // Check if there are extra characters after the first one
+      if (scanf("%c", &extra_char) == 1 && extra_char != '\n') {
+        // Clear the rest of the input buffer
+        while (getchar() != '\n' && getchar() != EOF);
+        printf("Please enter only one character (Y or N):\t");
+        continue;
+      }
+      
       if (answer == 'Y' || answer == 'y') {
         printf("Alright, let's go again!\n");
         game_loop(game);
       } else if (answer == 'N' || answer == 'n') {
-        printf("CASH WON:\t\t%d\n", game->cash);
+        printf("\nCASH:\t\t%d\n", game->cash);
         printf("HANDS WON:\t\t%d\n", game->hands_won);
         printf("\n\nThanks for playing! See you next time!\n\n");
         cleanup(game);
         exit(0);
       } else {
-        printf("Just type Y or N: ");
+        printf("Invalid input. Please enter Y (yes) or N (no):\t");
       }
     } else {
-      while (getchar() != '\n' && getchar() != EOF) {
-        printf("Just type Y or N: ");
-      }
+      // Clear input buffer on scanf failure
+      while (getchar() != '\n' && getchar() != EOF);
+      printf("Invalid input. Please enter Y (yes) or N (no):\t");
     }
   }
 }
@@ -298,9 +323,7 @@ void dealer_draw(BlackJackGameState *game) {
     game->pot = 0;
     game->hands_won += 1;
   } else {
-    printf("It's a tie!\n");
-    game->cash += game->pot;
-    game->pot = 0;
+    printf("It's a tie! Money stays in the pot for next round.\n");
   }
 
   reset_cards(game);
@@ -308,6 +331,7 @@ void dealer_draw(BlackJackGameState *game) {
 
 void hit_or_stand(BlackJackGameState *game) {
   char answer;
+  char extra_char;
   int exit = 0;
   int total = calc_total(&game->player_hand);
   if (total == BLACKJECK && game->player_hand.len == 2) {
@@ -318,8 +342,16 @@ void hit_or_stand(BlackJackGameState *game) {
     reset_cards(game);
   }
   while (!exit) {
-    printf("Please Enter [H]it or [S]tand:\t");
+    printf("\nPlease enter H (Hit) or S (Stand):\t");
     if (scanf(" %c", &answer) == 1) {
+      // Check if there are extra characters after the first one
+      if (scanf("%c", &extra_char) == 1 && extra_char != '\n') {
+        // Clear the rest of the input buffer
+        while (getchar() != '\n' && getchar() != EOF);
+        printf("Please enter only one character (H for Hit or S for Stand):\t");
+        continue;
+      }
+      
       if (answer == 'H' || answer == 'h') {
         append_card(&game->player_hand, card_remove_at(&game->deck));
         printf("\nYour Cards:\n\n");
@@ -340,12 +372,13 @@ void hit_or_stand(BlackJackGameState *game) {
         exit = 1;
         dealer_draw(game);
         break;
+      } else {
+        printf("Invalid choice.");
       }
     } else {
-      while (getchar() != '\n' && getchar() != EOF) {
-        printf("Just type Y or N: ");
-        exit = 0;
-      }
+      // Clear input buffer on scanf failure
+      while (getchar() != '\n' && getchar() != EOF);
+      printf("Invalid input.");
     }
   }
 }

@@ -1,13 +1,10 @@
 CC=gcc
 CFLAGS=-Wall -Wextra -std=c99 -pedantic -g
-FILES=main.c main.h
+FILES=blackjeck.c blackjeck.h
 
 game: $(FILES)
-	$(CC) main.c $(CFLAGS) -o game
-
-run: game
-	./game
+	$(CC) blackjeck.c $(CFLAGS) -o blackjeck && ./blackjeck
 
 .PHONY: clean run
 clean: 
-	rm -f game
+	rm -f blackjeck
