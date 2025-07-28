@@ -35,31 +35,6 @@ BlackJack/
 └── readme.md        # This file
 ```
 
-## Data Structures
-
-### Card
-
-- `uint8_t data`: Encoded card data (rank in lower 4 bits, suit in upper 4 bits)
-- `struct Card *next`: Pointer to next card (linked list)
-
-### CardsList
-
-- Linked list implementation for managing cards
-- Tracks head, tail, and length
-
-### BlackJackGameState
-
-- Complete game state including deck, player hand, dealer hand
-- Cash management and game statistics
-
-## Key Features
-
-- **Random Card Drawing**: Cards are randomly removed from the deck using [`card_remove_at`](blackjeck.c)
-- **Smart Ace Handling**: The [`calc_total`](blackjeck.c) function automatically adjusts Ace values
-- **Visual Card Display**: ASCII art card representation in [`show_cards`](blackjeck.c)
-- **Memory Management**: Proper cleanup with [`deallocate_cards_list`](blackjeck.c)
-- **Input Validation**: Robust betting and game input handling
-
 ## Building and Running
 
 ### Prerequisites
@@ -89,6 +64,31 @@ gcc blackjeck.c -Wall -Wextra -std=c99 -pedantic -g -o blackjeck
 ```bash
 ./blackjeck
 ```
+
+## Data Structures
+
+### Card
+
+- `uint8_t data`: Encoded card data (rank in lower 4 bits, suit in upper 4 bits)
+- `struct Card *next`: Pointer to next card (linked list)
+
+### CardsList
+
+- Linked list implementation for managing cards
+- Tracks head, tail, and length
+
+### BlackJackGameState
+
+- Complete game state including deck, player hand, dealer hand
+- Cash management and game statistics
+
+## Key Features
+
+- **Random Card Drawing**: Cards are randomly removed from the deck using [`card_remove_at`](blackjeck.c)
+- **Smart Ace Handling**: The [`calc_total`](blackjeck.c) function automatically adjusts Ace values
+- **Visual Card Display**: ASCII art card representation in [`show_cards`](blackjeck.c)
+- **Memory Management**: Proper cleanup with [`deallocate_cards_list`](blackjeck.c)
+- **Input Validation**: Robust betting and game input handling
 
 ## How to Play
 
