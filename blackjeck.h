@@ -1,6 +1,6 @@
 #include <inttypes.h>
-#include <ncurses.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #define CARDS_DECK_NUM 52
 #define SUITES_NUM 4

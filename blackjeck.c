@@ -102,10 +102,12 @@ int betting(BlackJackGameState *game) {
     }
     game->pot += bet_amount;
     game->cash -= bet_amount;
-    printf("\n____________\n"
-           "POT:\t$%d\nCASH:\t$%d"
-           "\n‾‾‾‾‾‾‾‾‾‾‾‾\n",
-           bet_amount, game->cash);
+    printf(
+        "\n------------\n"
+        "CASH:\t$%d\n"
+        "POT:\t$%d"
+        "\n------------\n",
+        game->cash, game->pot);
   }
   return 0;
 }
@@ -232,12 +234,13 @@ void show_cards(CardsList *list, bool show_all) {
       } else {
         uint8_t rank = current->data & RANK_MASK;
         uint8_t suit_bits = (current->data >> 4) & RANK_MASK;
-        
-        const char *suit = (suit_bits & 1) ? "♥" :
-                          (suit_bits & 2) ? "♣" :
-                          (suit_bits & 4) ? "♦" :
-                          (suit_bits & 8) ? "♠" : "?";
-        
+        // ♠♥︎♦︎♣︎
+        const char *suit = (suit_bits & 1) ? "\u2665" : // ♥︎
+                          (suit_bits & 2) ? "\u2663" : // ♣︎
+                          (suit_bits & 4) ? "\u2666" : // ♦︎
+                          (suit_bits & 8) ? "\u2660" : // ♠︎
+                          "?";
+
         switch (row) {
           case 0: printf("┌─────────┐ "); break;
           case 1: printf("│%s        │ ", suit); break;
