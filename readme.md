@@ -2,6 +2,16 @@
 
 A console-based BlackJack game written in C by Gurel Ben Shabat.
 
+## Quick Start
+
+```bash
+# Run the game
+make game
+
+# Clean build files
+make clean
+```
+
 ## Overview
 
 This is a classic BlackJack implementation featuring:
@@ -74,6 +84,10 @@ make clean
 
 ```bash
 gcc blackjeck.c -Wall -Wextra -std=c99 -pedantic -g -o blackjeck
+```
+
+```bash
+./blackjeck
 ```
 
 ## How to Play
