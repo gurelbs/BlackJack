@@ -6,6 +6,11 @@
 #include <stdlib.h>
 #include <time.h>
 
+#ifdef _WIN32
+#include <windows.h>
+#include <locale.h>
+#endif
+
 int cards_list_init(CardsList *list) {
   if (!list)
     return -1;
@@ -234,12 +239,11 @@ void show_cards(CardsList *list, bool show_all) {
       } else {
         uint8_t rank = current->data & RANK_MASK;
         uint8_t suit_bits = (current->data >> 4) & RANK_MASK;
-        // ♠♥︎♦︎♣︎
-        const char *suit = (suit_bits & 1) ? "\u2665" : // ♥︎
-                          (suit_bits & 2) ? "\u2663" : // ♣︎
-                          (suit_bits & 4) ? "\u2666" : // ♦︎
-                          (suit_bits & 8) ? "\u2660" : // ♠︎
-                          "?";
+        const char *suit = (suit_bits & 1)   ? "♥"
+                           : (suit_bits & 2) ? "♣"
+                           : (suit_bits & 4) ? "♦"
+                           : (suit_bits & 8) ? "♠"
+                                             : "?";
 
         switch (row) {
           case 0: printf("┌─────────┐ "); break;
@@ -266,9 +270,7 @@ void ask_play_again(BlackJackGameState *game) {
   printf("Want to play again? (Y/N):\t");
   while (true) {
     if (scanf(" %c", &answer) == 1) {
-      // Check if there are extra characters after the first one
       if (scanf("%c", &extra_char) == 1 && extra_char != '\n') {
-        // Clear the rest of the input buffer
         while (getchar() != '\n' && getchar() != EOF);
         printf("Please enter only one character (Y or N):\t");
         continue;
@@ -287,7 +289,6 @@ void ask_play_again(BlackJackGameState *game) {
         printf("Invalid input. Please enter Y (yes) or N (no):\t");
       }
     } else {
-      // Clear input buffer on scanf failure
       while (getchar() != '\n' && getchar() != EOF);
       printf("Invalid input. Please enter Y (yes) or N (no):\t");
     }
@@ -347,9 +348,7 @@ void hit_or_stand(BlackJackGameState *game) {
   while (!exit) {
     printf("\nPlease enter H (Hit) or S (Stand):\t");
     if (scanf(" %c", &answer) == 1) {
-      // Check if there are extra characters after the first one
       if (scanf("%c", &extra_char) == 1 && extra_char != '\n') {
-        // Clear the rest of the input buffer
         while (getchar() != '\n' && getchar() != EOF);
         printf("Please enter only one character (H for Hit or S for Stand):\t");
         continue;
@@ -379,7 +378,6 @@ void hit_or_stand(BlackJackGameState *game) {
         printf("Invalid choice.");
       }
     } else {
-      // Clear input buffer on scanf failure
       while (getchar() != '\n' && getchar() != EOF);
       printf("Invalid input.");
     }
@@ -417,6 +415,10 @@ void game_loop(BlackJackGameState *game) {
 }
 
 int main() {
+  #ifdef _WIN32
+  SetConsoleOutputCP(CP_UTF8);
+  setlocale(LC_ALL, ".UTF-8");
+  #endif
   srand(time(NULL));
   BlackJackGameState game;
   initializing(&game);
