@@ -5,8 +5,12 @@ A console-based BlackJack game written in C by Gurel Ben Shabat.
 ## Build Commands
 
 ```bash
-# Compile the game and run
-make game
+# Compile the game
+make
+#run the file
+./blackjeck
+# or (for windows)
+./blackjeck.exe
 
 # Clean build files
 make clean
