@@ -12,10 +12,10 @@
 #define RANK_MASK 0x0F
 
 typedef enum Suits {
-  HEART = 1,
-  CLUBS = 2,
-  DIAMONDS = 4,
-  SPADES = 8,
+  HEART = 0x01,
+  CLUBS = 0x02,
+  DIAMONDS = 0x04,
+  SPADES = 0x08,
 } Suits;
 
 typedef struct Card {
