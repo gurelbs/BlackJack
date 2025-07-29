@@ -11,7 +11,9 @@ make
 ./blackjeck
 # or (for windows)
 ./blackjeck.exe
+```
 
+```bash
 # Clean build files
 make clean
 ```
